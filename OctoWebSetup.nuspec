@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>OctoWebSetup</id>
-        <version>1.0.0</version>
+        <version>$version$</version>
         <authors>Tomas Jansson</authors>
         <owners>Tomas Jansson</owners>
         <projectUrl>https://github.com/mastoj/OctoWebSetup</projectUrl>
@@ -12,7 +12,6 @@
         <copyright>Copyright 2013</copyright>
         <tags>Octopus PowerShell</tags>
         <dependencies>
-            <dependency id="SampleDependency" version="1.0" />
         </dependencies>
     </metadata>
     <files>
