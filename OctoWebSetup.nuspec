@@ -18,6 +18,7 @@
         <file src="DeployScripts\Dev.Config.ps1" target="content\Deploy\Dev.Config.ps1" />
         <file src="DeployScripts\IISConfiguration.ps1" target="content\Deploy\IISConfiguration.ps1" />
         <file src="DeployScripts\DoConfig.ps1" target="content\Deploy\DoConfig.ps1" />
+        <file src="DeployScripts\PreDeploy.ps1" target="content\DoConfig.ps1" />
         <file src="readme.txt" target="readme.txt" />
     </files>
 </package>
