@@ -1,1 +1,1 @@
-﻿. ".\Deploy\DoConfig.ps1"
+﻿. ".\DeployScripts\DoConfig.ps1"
