@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 
 function Get-ScriptDirectory
 {
@@ -15,19 +15,26 @@ function Get-OctopusWebSiteNameFromConfig($conf) {
     Write-Error "Configuration is missing site"
     exit 1
 }
+try
+{
+    if($configFile -eq $null) {
+		$configFile = "Local.Config.ps1"
+	}
 
-if($configFile -eq $null) {
-    $configFile = "Local.Config.ps1"
+
+	$IISConfigurationScriptPath = (Get-ScriptDirectory) + "\IISConfiguration.ps1"
+	. $IISConfigurationScriptPath
+
+	$configFilePath = (Get-ScriptDirectory) + "\$configFile"
+	. $configFilePath
+
+	CreateAppPools $config.ApplicationPools
+	CreateSiteFromConfig $config.Site
+
+	Set-OctopusVariable -Name "OctopusWebSiteName" -Value (Get-OctopusWebSiteNameFromConfig $config)
 }
-
-
-$IISConfigurationScriptPath = (Get-ScriptDirectory) + "\IISConfiguration.ps1"
-. $IISConfigurationScriptPath
-
-$configFilePath = (Get-ScriptDirectory) + "\$configFile"
-. $configFilePath
-
-CreateAppPools $config.ApplicationPools
-CreateSiteFromConfig $config.Site
-
-Set-OctopusVariable -Name "OctopusWebSiteName" -Value (Get-OctopusWebSiteNameFromConfig $config)
+catch
+{
+	Write-Error "Failed to setup IIS"
+	Exit 1
+}
