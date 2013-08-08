@@ -17,7 +17,7 @@ function Get-OctopusWebSiteNameFromConfig($conf) {
 }
 try
 {
-    if($configFile -eq $null) {
+	if($configFile -eq $null) {
 		$configFile = "Local.Config.ps1"
 	}
 
@@ -30,8 +30,9 @@ try
 
 	CreateAppPools $config.ApplicationPools
 	CreateSiteFromConfig $config.Site
-
-	Set-OctopusVariable -Name "OctopusWebSiteName" -Value (Get-OctopusWebSiteNameFromConfig $config)
+	$siteName = (Get-OctopusWebSiteNameFromConfig $config)
+	Write-Host "Setting OctopusWebSiteName: $siteName"
+	Set-OctopusVariable -Name "OctopusWebSiteName" -Value $siteName
 }
 catch
 {
