@@ -42,29 +42,38 @@ function GetIfNull($value, $default) {
     if ($value -eq $null) { $default } else { $value }
 }
 
-function CreateApplicationPool($appPoolName, $appPoolFrameworkVersion, $appPoolIdentityType, $userName, $password) {
+function CreateApplicationPool($appPoolConfig) {
+    $appPoolName = $appPoolConfig.Name
+    $appPoolFrameworkVersion = $appPoolConfig.FrameworkVersion
+    $appPoolIdentityType = $appPoolConfig.AppPoolIdentityType
+    $userName = $appPoolConfig.UserName
+    $password = $appPoolConfig.Password
+    $enable32BitsApp = $appPoolConfig.Enable32BitApps
+
     $appPoolFrameworkVersion = GetIfNull $appPoolFrameworkVersion "v4.0"
     $appPoolIdentityType = GetIfNull $appPoolIdentityType "ApplicationPoolIdentity"
+    $enable32BitsApp = GetIfNull $enable32BitsApp $False
     if($appPoolIdentityType -eq "SpecificUser") {
         GuardAgainstNull $userName "userName and password must be set when using SpecificUser"
         GuardAgainstNull $password "userName and password must be set when using SpecificUser"
     }
     
+    $appPoolFullPath = "$appPoolsPath\$appPoolName"
     if(AppPoolExists $appPoolName) {
         Write-Info "Application pool already exists"
     } else {
         Write-Info "Creating application pool: $appPoolName"
-        $appPoolFullPath = "$appPoolsPath\$appPoolName"
         $appPool = new-item $appPoolFullPath
-        if($appPoolIdentityType -ne "SpecificUser") {
-            Set-ItemProperty $appPoolFullPath -name processModel -value @{identitytype="$appPoolIdentityType"}
-        }
-        else {
-            Set-ItemProperty $appPoolFullPath -name processModel -value @{identitytype="$appPoolIdentityType"; username="$userName"; password="$password"}
-        }
-        Set-ItemProperty $appPoolFullPath managedRuntimeVersion "$appPoolFrameworkVersion"
         Write-Info "Application pool created"
     }
+    if($appPoolIdentityType -ne "SpecificUser") {
+        Set-ItemProperty $appPoolFullPath -name processModel -value @{identitytype="$appPoolIdentityType"}
+    }
+    else {
+        Set-ItemProperty $appPoolFullPath -name processModel -value @{identitytype="$appPoolIdentityType"; username="$userName"; password="$password"}
+    }
+    Set-ItemProperty $appPoolFullPath managedRuntimeVersion "$appPoolFrameworkVersion"
+    Set-ItemProperty $appPoolFullPath enable32BitAppOnWin64 "$enable32BitsApp"
 }
 
 function GetNextSiteId {
@@ -142,12 +151,7 @@ function SetBindings($siteName, $bindings) {
 
 function CreateAppPools($appPoolsConfig) {
     Foreach($appPoolConfig in $appPoolsConfig) {
-        $appPoolName = $appPoolConfig.Name
-        $appPoolFrameworkVersion = $appPoolConfig.FrameworkVersion
-        $appPoolIdentityType = $appPoolConfig.AppPoolIdentityType
-        $userName = $appPoolConfig.UserName
-        $password = $appPoolConfig.Password
-        CreateApplicationPool $appPoolName $appPoolFrameworkVersion $appPoolIdentityType $userName $password
+        CreateApplicationPool $appPoolConfig
     }
 }
 

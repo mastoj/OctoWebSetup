@@ -2,10 +2,12 @@
     ApplicationPools = @(
         @{
             Name = "DemoSiteAppPool";
+            Enable32BitApps = $True;
             FrameworkVersion = "v4.0"
         },
         @{
             Name = "DemoSiteAppAppPool";
+            Enable32BitApps = $True;
             FrameworkVersion = "v4.0"
         });
     Site = @{
