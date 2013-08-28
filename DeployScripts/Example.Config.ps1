@@ -14,15 +14,23 @@
         Name = "DemoSite";
         SiteRoot = "c:\tmp";
         AppPoolName = "DemoSiteAppPool";
-        Port = 88
+        Port = 88;
+		Authentication = @(
+			@{ Mode = "windowsAuthentication"; Enabled = $False },
+			@{ Mode = "anonymousAuthentication"; Enabled = $False }
+		);
         Bindings = @(
-            @{Port= 88; HostName= "*"}, 
-            @{Port= 89; HostName= "DemoApp"}
+            @{Port = 88; HostName = "*"}, 
+            @{Port = 89; HostName = "DemoApp"}
         );
         Application = @{
             Name = "DemoApp";
             AppPoolName = "DemoSiteAppAppPool";
-            ApplicationRoot = "c:\tmp"
+            ApplicationRoot = "c:\tmp";
+			Authentication = @(
+				@{ Mode = "windowsAuthentication"; Enabled = $True },
+				@{ Mode = "anonymousAuthentication"; Enabled = $True }
+			)
         }
     };
 }

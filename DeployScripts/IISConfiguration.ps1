@@ -103,12 +103,17 @@ function CreateSite($siteName, $siteRoot, $appPoolName, $port) {
     }
 }
 
-function CreateApplication($siteName, $applicationName, $applicationRoot, $appPoolName) {
+function CreateApplication($siteName, $applicationConfig) {
+	$applicationName = $applicationConfig.Name
+	$applicationRoot = $applicationConfig.ApplicationRoot
+	$appPoolName = $applicationConfig.AppPoolName
     GuardAgainstNull $siteName "siteName mest be set"
     GuardAgainstNull $applicationRoot "applicationRoot must be set"
     GuardAgainstNull $applicationName "applicationName must be set"
     GuardAgainstNull $appPoolName "appPoolName must be set"
-    $applicationIISPath = ($iisSitesPath + "\" + $siteName + "\" + $applicationName)
+	$appPath = $siteName + "\" + $applicationName
+	$appPathForAuth = $siteName + "/" + $applicationName
+    $applicationIISPath = ($iisSitesPath + "\" + $appPath)
     if(WebAppExists $applicationIISPath) {
         Write-Info "Application $siteName\$applicationName already exists"
     }
@@ -118,10 +123,35 @@ function CreateApplication($siteName, $applicationName, $applicationRoot, $appPo
         Set-ItemProperty $applicationIISPath -name applicationPool -value "$appPoolName"
         Write-Info "Application Created" 
     }
+	if($applicationConfig.Authentication) {
+		ConfigureAuthentication $appPathForAuth $applicationConfig.Authentication
+	}
 }
 
 function GetHostNamesForSite($siteName) {
     return $site.bindings.Collection | %{$_.bindingInformation.Split(":")[2]}
+}
+
+function Enable-AuthenticationMode($authenticationMode, $location) {
+    Set-WebConfigurationProperty -filter "/system.webServer/security/authentication/$authenticationMode" -name enabled -value true -PSPath "IIS:\" -location "$location"
+}
+
+function Disable-AuthenticationMode($authenticationMode, $location) {
+    Set-WebConfigurationProperty -filter "/system.webServer/security/authentication/$authenticationMode" -name enabled -value false -PSPath "IIS:\" -location "$location"
+}
+
+function ConfigureAuthentication($location, $authentications) {
+	ForEach($authentication in $authentications) {
+		$mode = $authentication.Mode
+		if($authentication.Enabled) {
+			Write-Info "Enabling $mode for $location"
+			Enable-AuthenticationMode $mode $location
+		}
+		else {
+			Write-Info "Disabling $mode for $location"
+			Disable-AuthenticationMode $mode $location
+		}
+	}
 }
 
 function ClearBindings($siteName) {
@@ -136,7 +166,6 @@ function AddBindings($siteName, $bindings) {
     }
 }
 
-#@(@{Port= 83; HostName= "tomas"}, @{Port= 84; HostName= "tomas"})
 function SetBindings($siteName, $bindings) {
     Write-Info "Bindings will be deleted and added again"
     Write-Info "SiteName: $siteName"
@@ -161,14 +190,13 @@ function CreateSiteFromConfig($siteConfig) {
     $appPoolName = $siteConfig.AppPoolName
     $port = $siteConfig.Port
     CreateSite $siteName $siteRoot $appPoolName $port
-    
     if($siteConfig.Bindings) {
         SetBindings $siteName $siteConfig.Bindings
     }
+	if($siteConfig.Authentication) {
+		ConfigureAuthentication $siteName $siteConfig.Authentication
+	}
     if($siteConfig.Application) {
-        $applicationName = $siteConfig.Application.Name
-        $applicationRoot = $siteConfig.Application.ApplicationRoot
-        $appPoolName = $siteConfig.Application.AppPoolName
-        CreateApplication $siteName $applicationName $applicationRoot $appPoolName
+        CreateApplication $siteName $siteConfig.Application
     }
 }
