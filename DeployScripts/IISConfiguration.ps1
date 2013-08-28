@@ -144,11 +144,11 @@ function ConfigureAuthentication($location, $authentications) {
 	ForEach($authentication in $authentications) {
 		$mode = $authentication.Mode
 		if($authentication.Enabled) {
-			Write-Info "Enabling $mode for $location"
+			Write-Info "Enabling Authentication $mode for $location"
 			Enable-AuthenticationMode $mode $location
 		}
 		else {
-			Write-Info "Disabling $mode for $location"
+			Write-Info "Disabling Authentication $mode for $location"
 			Disable-AuthenticationMode $mode $location
 		}
 	}
