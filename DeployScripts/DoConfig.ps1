@@ -1,7 +1,10 @@
 $ErrorActionPreference = "Stop"
 
+Write-Host "Config file: $configFile"
+
 function Get-ScriptDirectory
 {
+    Write-Host "Getting Script directory"
     Split-Path $script:MyInvocation.MyCommand.Path
 }
 
@@ -17,25 +20,34 @@ function Get-OctopusWebSiteNameFromConfig($conf) {
 }
 try
 {
-	if($configFile -eq $null) {
-		$configFile = "Local.Config.ps1"
-	}
+    if($configFile -eq $null) {
+        $configFile = "Local.Config.ps1"
+    }
 
+    $scriptDirectory = split-path -parent $MyInvocation.MyCommand.Definition
 
-	$IISConfigurationScriptPath = (Get-ScriptDirectory) + "\IISConfiguration.ps1"
-	. $IISConfigurationScriptPath
+    $IISConfigurationScriptPath = $scriptDirectory + "\IISConfiguration.ps1"
+    Write-Host "Sourcing IIS configuration utility: $IISConfigurationScriptPath"
+    . $IISConfigurationScriptPath
 
-	$configFilePath = (Get-ScriptDirectory) + "\$configFile"
-	. $configFilePath
+    Write-Host "Sourcing config file"
 
-	CreateAppPools $config.ApplicationPools
-	CreateSiteFromConfig $config.Site
-	$siteName = (Get-OctopusWebSiteNameFromConfig $config)
-	Write-Host "Setting OctopusWebSiteName: $siteName"
-	Set-OctopusVariable -Name "OctopusWebSiteName" -Value $siteName
+    $configFilePath = $scriptDirectory + "\$configFile"
+    . $configFilePath
+
+    Write-Host "Create application pools"
+    CreateAppPools $config.ApplicationPools
+
+    Write-Host "Create site"
+    CreateSiteFromConfig $config.Site
+
+    Write-Host "Set ocotpus web site name"
+    $siteName = (Get-OctopusWebSiteNameFromConfig $config)
+    Write-Host "Setting OctopusWebSiteName: $siteName"
+    Set-OctopusVariable -Name "WebSiteName" -Value $siteName
 }
 catch
 {
-	Write-Error "Failed to setup IIS"
-	Exit 1
+    Write-Error "Failed to setup IIS"
+    Exit 1
 }
