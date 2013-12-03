@@ -43,8 +43,10 @@ try
 
     Write-Host "Set ocotpus web site name"
     $siteName = (Get-OctopusWebSiteNameFromConfig $config)
+
     Write-Host "Setting OctopusWebSiteName: $siteName"
-    Set-OctopusVariable -Name "WebSiteName" -Value $siteName
+    Set-OctopusVariable -Name "OctopusWebSiteName" -Value $siteName
+    Set-OctopusVariable -Name "Octopus.Action.Package.UpdateIisWebsiteName" -Value $siteName
 }
 catch
 {
